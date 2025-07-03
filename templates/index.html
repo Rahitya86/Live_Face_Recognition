@@ -1,0 +1,1481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Recognition Attendance System</title>
+    <style>
+        :root {
+            --primary-color: #4285f4;
+            --secondary-color: #34a853;
+            --danger-color: #ea4335;
+            --info-color: #fbbc05;
+            --light-gray: #f5f5f5;
+            --mid-gray: #e0e0e0;
+            --dark-gray: #333;
+            --text-color: #444;
+            --border-radius-sm: 5px;
+            --border-radius-md: 12px;
+            --border-radius-lg: 20px;
+            --box-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.08);
+            --box-shadow-md: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            color: var(--text-color);
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--box-shadow-md);
+            overflow: hidden;
+        }
+
+        header {
+            text-align: center;
+            padding: 25px 0;
+            background-color: var(--primary-color);
+            color: white;
+            margin-bottom: 20px;
+            border-bottom-left-radius: var(--border-radius-md);
+            border-bottom-right-radius: var(--border-radius-md);
+        }
+
+        h1 {
+            margin-bottom: 5px;
+            font-size: 2.2em;
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .mode-toggle {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            background-color: var(--light-gray);
+            border-radius: var(--border-radius-lg);
+            padding: 5px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: var(--border-radius-lg);
+            background-color: transparent;
+            color: var(--dark-gray);
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .mode-btn.active {
+            background-color: white;
+            color: var(--primary-color);
+            box-shadow: var(--box-shadow-sm);
+        }
+
+        .panel {
+            background-color: white;
+            border-radius: var(--border-radius-md);
+            padding: 25px;
+            margin: 0 20px 30px 20px;
+            box-shadow: var(--box-shadow-md);
+        }
+
+        .panel h2 {
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--mid-gray);
+            padding-bottom: 10px;
+            font-size: 1.8em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark-gray);
+        }
+
+        input[type="text"],
+        input[type="email"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: var(--border-radius-sm);
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius-sm);
+            background-color: #fff;
+        }
+
+        .webcam-container {
+            position: relative;
+            width: 100%;
+            max-width: 640px;
+            margin: 20px auto;
+            border-radius: var(--border-radius-md);
+            overflow: hidden;
+            box-shadow: var(--box-shadow-sm);
+            aspect-ratio: 4/3;
+            background-color: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .webcam-video-feed, .webcam-canvas-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+        }
+
+        .webcam-overlay-text {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: var(--border-radius-sm);
+            font-size: 14px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--border-radius-md);
+            background-color: var(--primary-color);
+            color: white;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            box-shadow: var(--box-shadow-sm);
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .btn-success {
+            background-color: var(--secondary-color);
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+        }
+
+        .btn-secondary {
+            background-color: #5f6368;
+        }
+
+        .capture-progress {
+            margin: 15px 0;
+            font-weight: bold;
+            text-align: center;
+            color: var(--primary-color);
+        }
+
+        .progress-bar-container {
+            width: 80%;
+            max-width: 400px;
+            background-color: var(--mid-gray);
+            border-radius: var(--border-radius-lg);
+            height: 15px;
+            margin: 10px auto 20px auto;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background-color: var(--secondary-color);
+            border-radius: var(--border-radius-lg);
+            transition: width 0.3s ease-in-out;
+        }
+
+
+        .image-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 20px 0;
+            max-height: 250px;
+            overflow-y: auto;
+            padding: 10px;
+            background-color: var(--light-gray);
+            border-radius: var(--border-radius-md);
+            border: 1px solid #e0e0e0;
+        }
+
+        .preview-image {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: var(--border-radius-sm);
+            border: 2px solid #ddd;
+        }
+
+        .user-info {
+            background-color: var(--light-gray);
+            padding: 20px;
+            border-radius: var(--border-radius-md);
+            margin-top: 20px;
+            box-shadow: var(--box-shadow-sm);
+            border: 1px solid #e0e0e0;
+        }
+
+        .user-info h3 {
+            margin-bottom: 10px;
+            color: var(--secondary-color);
+            font-size: 1.4em;
+        }
+
+        .user-info p {
+            margin-bottom: 8px;
+        }
+
+        .users-list-panel {
+            margin-top: 30px;
+        }
+
+        .user-card {
+            background-color: white;
+            border-radius: var(--border-radius-md);
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: var(--box-shadow-sm);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #eee;
+        }
+
+        .user-card-info {
+            flex: 1;
+            min-width: 150px;
+            margin-right: 15px;
+        }
+
+        .user-card-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 1.1em;
+        }
+
+        .user-card-rollno {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .user-card-attendance-summary {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 8px 15px;
+            border-radius: var(--border-radius-lg);
+            font-size: 0.9em;
+            font-weight: bold;
+            min-width: 100px;
+            text-align: center;
+            margin-right: 10px;
+        }
+
+        .view-attendance-btn {
+            background-color: #5f6368;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: var(--border-radius-lg);
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.3s ease;
+        }
+
+        .view-attendance-btn:hover {
+            background-color: #3e4144;
+        }
+
+        .alert-message {
+            padding: 15px;
+            border-radius: var(--border-radius-md);
+            margin: 20px;
+            background-color: #ffeb3b;
+            color: #333;
+            font-weight: 500;
+            box-shadow: var(--box-shadow-sm);
+            border-left: 5px solid;
+            display: none;
+        }
+
+        .alert-message.info {
+            background-color: #e3f2fd;
+            color: #1565c0;
+            border-color: #2196f3;
+        }
+
+        .alert-message.success {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            border-color: #4caf50;
+        }
+
+        .alert-message.error {
+            background-color: #ffebee;
+            color: #c62828;
+            border-color: #ef5350;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .modal {
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.6);
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal:not(.hidden) {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 30px;
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--box-shadow-md);
+            width: 80%;
+            max-width: 500px;
+            position: relative;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            cursor: pointer;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: #333;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .modal-content h3 {
+            margin-bottom: 15px;
+            color: var(--primary-color);
+            border-bottom: 1px solid var(--mid-gray);
+            padding-bottom: 10px;
+        }
+
+        .attendance-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid var(--mid-gray);
+            border-radius: var(--border-radius-sm);
+            padding: 10px;
+            background-color: var(--light-gray);
+        }
+
+        .attendance-list p {
+            padding: 8px 0;
+            border-bottom: 1px dashed #ccc;
+            font-size: 0.95em;
+        }
+
+        .attendance-list p:last-child {
+            border-bottom: none;
+        }
+
+        .today-status {
+            padding: 5px 10px;
+            border-radius: var(--border-radius-lg);
+            font-size: 0.85em;
+            font-weight: bold;
+            min-width: 120px;
+            text-align: center;
+        }
+
+        .status-present {
+            background-color: #e8f5e9;
+            color: var(--secondary-color);
+            border: 1px solid var(--secondary-color);
+        }
+
+        .status-absent {
+            background-color: #ffebee;
+            color: var(--danger-color);
+            border: 1px solid var(--danger-color);
+        }
+
+        .attendance-table-container {
+            max-height: 500px;
+            overflow-y: auto;
+            border: 1px solid var(--mid-gray);
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--box-shadow-sm);
+            background-color: white;
+        }
+
+        #attendanceTable {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        #attendanceTable th, #attendanceTable td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        #attendanceTable th {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        #attendanceTable tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        #attendanceTable tbody tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .date-filter-container {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .date-filter-container label {
+            margin-bottom: 0;
+        }
+
+        .date-filter-container input[type="date"] {
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: var(--border-radius-sm);
+            font-size: 1em;
+        }
+
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            .container {
+                margin: 0;
+                border-radius: 0;
+                box-shadow: none;
+            }
+            header {
+                border-radius: 0;
+            }
+            .panel {
+                padding: 15px;
+                margin: 0 10px 20px 10px;
+                box-shadow: var(--box-shadow-sm);
+            }
+            h1 {
+                font-size: 1.8em;
+            }
+            header p {
+                font-size: 1em;
+            }
+            .mode-toggle {
+                margin: 15px auto;
+                max-width: 90%;
+            }
+            .mode-btn {
+                padding: 10px 15px;
+                font-size: 0.9em;
+            }
+            .panel h2 {
+                font-size: 1.5em;
+            }
+            .btn {
+                padding: 10px 20px;
+                font-size: 0.9em;
+                width: auto;
+                margin-right: 5px;
+            }
+            .btn-group {
+                justify-content: flex-start;
+                gap: 5px;
+            }
+            .user-card {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 12px;
+            }
+            .user-card-info {
+                width: 100%;
+                margin-right: 0;
+                margin-bottom: 10px;
+            }
+            .user-card-attendance-summary {
+                width: 100%;
+                text-align: left;
+                margin-bottom: 10px;
+            }
+            .view-attendance-btn {
+                width: 100%;
+            }
+            .webcam-container {
+                margin-left: 0;
+                margin-right: 0;
+                max-width: 100%;
+            }
+            .image-preview {
+                max-height: 200px;
+                padding: 5px;
+            }
+            .preview-image {
+                width: 60px;
+                height: 60px;
+            }
+            .modal-content {
+                width: 95%;
+                padding: 20px;
+            }
+            #attendanceTable th, #attendanceTable td {
+                padding: 8px 10px;
+                font-size: 0.85em;
+            }
+            .date-filter-container {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Face Recognition Attendance System</h1>
+            <p>Register users and mark attendance using facial recognition</p>
+        </header>
+
+        <div class="mode-toggle">
+            <button id="registerBtn" class="mode-btn active">Register</button>
+            <button id="recognizeBtn" class="mode-btn">Recognize</button>
+            <button id="attendanceRecordsBtn" class="mode-btn">Attendance Records</button>
+        </div>
+
+        <div id="messageContainer" class="alert-message"></div>
+
+        <div id="registerPanel" class="panel">
+            <h2>Register New User</h2>
+            <div class="form-group">
+                <label for="name">Full Name</label>
+                <input type="text" id="name" placeholder="Enter full name">
+            </div>
+            <div class="form-group">
+                <label for="rollNo">Roll No (as User ID)</label>
+                <input type="text" id="rollNo" placeholder="Enter roll number (e.g., 12345, CS001)">
+            </div>
+
+            <div class="webcam-container">
+                <video id="webcam" class="webcam-video-feed" autoplay playsinline></video>
+                <canvas id="webcamCanvas" class="webcam-canvas-overlay"></canvas>
+                <div class="webcam-overlay-text">LIVE</div>
+            </div>
+
+            <div class="form-group btn-group">
+                <button id="startCapture" class="btn btn-success">Start Capture (0/30)</button>
+                <button id="stopCapture" class="btn btn-danger hidden">Stop Capture</button>
+                <button id="uploadImages" class="btn btn-secondary">Upload Images</button>
+                <input type="file" id="fileInput" multiple accept="image/*" class="hidden">
+            </div>
+            
+            <div class="progress-bar-container hidden">
+                <div id="captureProgressBar" class="progress-bar"></div>
+            </div>
+            <div id="captureProgressText" class="capture-progress hidden">Capturing images... (0/30)</div>
+
+            <div class="image-preview" id="imagePreview"></div>
+
+            <button id="registerUserBtn" class="btn btn-primary" disabled>Register User</button>
+        </div>
+
+        <div id="recognizePanel" class="panel hidden">
+            <h2>Recognize User & Mark Attendance</h2>
+            <div class="webcam-container">
+                <video id="recognizeWebcam" class="webcam-video-feed" autoplay playsinline></video>
+                <canvas id="recognizeCanvas" class="webcam-canvas-overlay"></canvas>
+                <div class="webcam-overlay-text">LIVE</div>
+            </div>
+
+            <button id="recognizeBtnAction" class="btn btn-primary">Start Recognition</button>
+            <button id="stopRecognitionBtn" class="btn btn-danger hidden">Stop Recognition</button>
+
+            <div id="recognizedUser" class="user-info hidden">
+                <h3>User Recognized</h3>
+                <p><strong>Name:</strong> <span id="recognizedName"></span></p>
+                <p><strong>Roll No:</strong> <span id="recognizedRollNo"></span></p>
+                <p><strong>Attendance Count:</strong> <span id="attendanceCount"></span></p>
+            </div>
+        </div>
+
+        <div id="attendanceHistoryPanel" class="panel hidden">
+            <h2>All Attendance Records</h2>
+            <div class="date-filter-container">
+                <label for="attendanceDateFilter">Filter by Date:</label>
+                <input type="date" id="attendanceDateFilter">
+                
+            </div>
+            <div class="attendance-table-container">
+                <table id="attendanceTable">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Roll No</th>
+                            <th>Name</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                    </tbody>
+                </table>
+            </div>
+            
+        </div>
+
+        <div class="panel users-list-panel">
+            <h2>Registered Users & Daily Summary</h2>
+            <div id="usersList"></div>
+            <h3>Today's Attendance Summary</h3>
+            <div id="dailySummary">
+                <p>Total Registered: <span id="summaryTotal">0</span></p>
+                <p>Present: <span id="summaryPresent">0</span> (<span id="presentNames">None</span>)</p>
+                <p>Absent: <span id="summaryAbsent">0</span> (<span id="absentNames">None</span>)</p>
+            </div>
+            
+        </div>
+    </div>
+
+    <div id="attendanceModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h3 id="modalUserName"></h3>
+            <div id="modalAttendanceList" class="attendance-list">
+                
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+
+    <script>
+        const registerBtn = document.getElementById('registerBtn');
+        const recognizeBtn = document.getElementById('recognizeBtn');
+        const attendanceRecordsBtn = document.getElementById('attendanceRecordsBtn'); 
+        const registerPanel = document.getElementById('registerPanel');
+        const recognizePanel = document.getElementById('recognizePanel');
+        const attendanceHistoryPanel = document.getElementById('attendanceHistoryPanel'); 
+        const messageContainer = document.getElementById('messageContainer');
+        const startCaptureBtn = document.getElementById('startCapture');
+        const stopCaptureBtn = document.getElementById('stopCapture');
+        const uploadImagesBtn = document.getElementById('uploadImages');
+        const fileInput = document.getElementById('fileInput');
+        const registerUserBtn = document.getElementById('registerUserBtn');
+        const recognizeBtnAction = document.getElementById('recognizeBtnAction');
+        const stopRecognitionBtn = document.getElementById('stopRecognitionBtn');
+        const captureProgressText = document.getElementById('captureProgressText');
+        const captureProgressBar = document.getElementById('captureProgressBar');
+        const captureProgressBarContainer = document.querySelector('.progress-bar-container');
+        const imagePreview = document.getElementById('imagePreview');
+        const recognizedUserDiv = document.getElementById('recognizedUser');
+        const usersListDiv = document.getElementById('usersList');
+        const recognizeWebcam = document.getElementById('recognizeWebcam');
+        const webcam = document.getElementById('webcam');
+        const webcamCanvas = document.getElementById('webcamCanvas');
+        const recognizeCanvas = document.getElementById('recognizeCanvas');
+        const dailySummaryDiv = document.getElementById('dailySummary');
+        const attendanceTableBody = document.querySelector('#attendanceTable tbody'); 
+        
+        const attendanceDateFilter = document.getElementById('attendanceDateFilter');
+
+        const attendanceModal = document.getElementById('attendanceModal');
+        const closeButton = document.querySelector('.close-button');
+        const modalUserName = document.getElementById('modalUserName');
+        const modalAttendanceList = document.getElementById('modalAttendanceList');
+
+        let capturedImagesDataURLs = [];
+        let isCapturing = false;
+        let captureInterval;
+        let captureCount = 0;
+        const CAPTURE_LIMIT = 30;
+        const FACE_DETECTION_MIN_CONFIDENCE = 0.7; // Added strict rule for face detection confidence
+        
+        let registerVideoStream = null;
+        let recognizeVideoStream = null;
+        let recognitionInterval;
+
+        const API_BASE_URL = window.location.origin;
+
+        let areModelsLoaded = false;
+
+        function showMessage(message, type = 'info') {
+            messageContainer.className = `alert-message alert-${type}`;
+            messageContainer.textContent = message;
+            messageContainer.style.display = 'block';
+            
+            if (type !== 'error') {
+                setTimeout(() => {
+                    messageContainer.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        async function startWebcam(videoElement) {
+            if (registerVideoStream) {
+                registerVideoStream.getTracks().forEach(track => track.stop());
+                registerVideoStream = null;
+                webcam.srcObject = null;
+                webcamCanvas.getContext('2d').clearRect(0,0,webcamCanvas.width,webcamCanvas.height);
+            }
+            if (recognizeVideoStream) {
+                recognizeVideoStream.getTracks().forEach(track => track.stop());
+                recognizeVideoStream = null;
+                recognizeWebcam.srcObject = null;
+                recognizeCanvas.getContext('2d').clearRect(0,0,recognizeCanvas.width,recognizeCanvas.height);
+            }
+
+            try {
+                let selectedDeviceId = null;
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const videoDevices = devices.filter(device => device.kind === 'videoinput');
+
+                if (videoDevices.length > 0) {
+                    let builtInCamera = videoDevices.find(device => 
+                        !/virtual|obs|droidcam|usb/i.test(device.label) && device.label !== ''
+                    );
+
+                    if (!builtInCamera) {
+                        builtInCamera = videoDevices.find(device => 
+                            !/virtual|obs|droidcam/i.test(device.label) && device.label !== ''
+                        );
+                    }
+
+                    if (builtInCamera) {
+                        selectedDeviceId = builtInCamera.deviceId;
+                        console.log('Attempting to use camera:', builtInCamera.label);
+                    } else {
+                        selectedDeviceId = videoDevices[0].deviceId;
+                        console.log('No distinct built-in camera identified. Using first available camera:', videoDevices[0].label);
+                        showMessage('Could not find a distinct built-in camera. Attempting to use the first available webcam. If this is a phone/external camera, please unplug it.', 'info');
+                    }
+                }
+
+                const constraints = {
+                    video: selectedDeviceId ? { deviceId: { exact: selectedDeviceId } } : true,
+                    audio: false
+                };
+
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                videoElement.srcObject = stream;
+                await videoElement.play();
+
+                if (videoElement === webcam) {
+                    registerVideoStream = stream;
+                } else if (videoElement === recognizeWebcam) {
+                    recognizeVideoStream = stream;
+                }
+                
+                const canvas = videoElement === webcam ? webcamCanvas : recognizeCanvas;
+                canvas.width = videoElement.videoWidth;
+                canvas.height = videoElement.videoHeight;
+
+                showMessage('Webcam started successfully.', 'success');
+                return true;
+            } catch (err) {
+                console.error('Error accessing webcam:', err);
+                let errorMessage = 'Error starting webcam: ' + err.message;
+                if (err.name === "NotReadableError") {
+                    errorMessage = 'Webcam is busy or in use by another application/browser tab. Please close other apps using the camera.';
+                } else if (err.name === "NotFoundError") {
+                    errorMessage = 'No webcam found. Please connect one.';
+                } else if (err.name === "NotAllowedError") {
+                    errorMessage = 'Camera access denied. Please allow camera access in browser settings (click camera icon in address bar or check site settings).';
+                } else if (err.name === "AbortError") {
+                    errorMessage = 'Webcam access was denied by user or device unexpectedly.';
+                } else if (err.name === "SecurityError") {
+                    errorMessage = 'Webcam access is blocked by your browser\'s security settings or you are not using HTTPS.';
+                } else if (err.name === "TypeError") {
+                    errorMessage = 'Invalid constraint provided to getUserMedia. This should not happen with current code.';
+                }
+                showMessage(errorMessage, 'error');
+                return false;
+            }
+        }
+
+        function stopAllWebcams() {
+            if (registerVideoStream) {
+                registerVideoStream.getTracks().forEach(track => track.stop());
+                registerVideoStream = null;
+                webcam.srcObject = null;
+                webcamCanvas.getContext('2d').clearRect(0,0,webcamCanvas.width,webcamCanvas.height);
+            }
+            if (recognizeVideoStream) {
+                recognizeVideoStream.getTracks().forEach(track => track.stop());
+                recognizeVideoStream = null;
+                recognizeWebcam.srcObject = null;
+                recognizeCanvas.getContext('2d').clearRect(0,0,recognizeCanvas.width,recognizeCanvas.height);
+            }
+            clearInterval(captureInterval);
+            clearInterval(recognitionInterval);
+            isCapturing = false;
+            captureCount = 0;
+        }
+
+        async function loadFaceApiModels() {
+            try {
+                showMessage('Loading face recognition models from CDN...', 'info');
+                const modelPath = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@0.22.2/weights';
+                
+                await Promise.all([
+                    faceapi.nets.ssdMobilenetv1.loadFromUri(modelPath),
+                    faceapi.nets.faceLandmark68Net.loadFromUri(modelPath),
+                    faceapi.nets.faceRecognitionNet.loadFromUri(modelPath),
+                ]);
+                areModelsLoaded = true;
+                showMessage('Face recognition models loaded successfully from CDN!', 'success');
+                registerUserBtn.disabled = false;
+                recognizeBtnAction.disabled = false;
+            } catch (error) {
+                console.error("Error loading Face-API.js models from CDN:", error);
+                showMessage(`Failed to load face recognition models from CDN: ${error.message}. Please check your internet connection.`, 'error');
+            }
+        }
+
+        function drawFaceDetection(videoEl, canvasEl, detections) {
+            const context = canvasEl.getContext('2d');
+            context.clearRect(0, 0, canvasEl.width, canvasEl.height);
+            context.drawImage(videoEl, 0, 0, canvasEl.width, canvasEl.height);
+
+            if (detections) {
+                detections.forEach(detection => {
+                    const box = detection.detection.box;
+                    context.strokeStyle = 'green';
+                    context.lineWidth = 2;
+                    context.strokeRect(box.x, box.y, box.width, box.height);
+                    context.fillStyle = 'green';
+                    context.font = '16px Arial';
+                    context.fillText('Face', box.x + 5, box.y + 20);
+                });
+            }
+        }
+        
+        function drawFaceRecognition(videoEl, canvasEl, detection, label, color) {
+            const context = canvasEl.getContext('2d');
+            context.clearRect(0, 0, canvasEl.width, canvasEl.height);
+            context.drawImage(videoEl, 0, 0, canvasEl.width, canvasEl.height);
+
+            if (detection && detection.detection) {
+                const box = detection.detection.box;
+                context.strokeStyle = color;
+                context.lineWidth = 2;
+                context.strokeRect(box.x, box.y, box.width, box.height);
+                context.fillStyle = color;
+                context.font = '16px Arial';
+                context.fillText(label, box.x + 5, box.y + 20);
+            } else {
+                context.fillStyle = 'red';
+                context.font = '24px Arial';
+                context.fillText('No Face Detected', 50, 50);
+            }
+        }
+
+
+        function startCapture() {
+            const name = document.getElementById('name').value.trim();
+            const rollNo = document.getElementById('rollNo').value.trim(); 
+            
+            if (!name || !rollNo) { 
+                showMessage('Please enter full name and roll number.', 'error'); 
+                return;
+            }
+            if (!areModelsLoaded) {
+                showMessage('Face recognition models are not loaded. Please wait.', 'error');
+                return;
+            }
+            if (!registerVideoStream) {
+                showMessage('Webcam not active. Please ensure webcam access.', 'error');
+                return;
+            }
+
+            capturedImagesDataURLs = [];
+            imagePreview.innerHTML = '';
+            captureCount = 0;
+            isCapturing = true;
+            registerUserBtn.disabled = true;
+            
+            startCaptureBtn.classList.add('hidden');
+            stopCaptureBtn.classList.remove('hidden');
+            captureProgressText.classList.remove('hidden');
+            captureProgressBarContainer.classList.remove('hidden');
+            updateCaptureProgress();
+            
+            captureInterval = setInterval(async () => {
+                if (captureCount < CAPTURE_LIMIT) {
+                    const detections = await faceapi.detectSingleFace(webcam, new faceapi.SsdMobilenetv1Options({ minConfidence: FACE_DETECTION_MIN_CONFIDENCE })).withFaceLandmarks().withFaceDescriptor();
+                    
+                    if (detections && detections.detection.score >= FACE_DETECTION_MIN_CONFIDENCE) {
+                        drawFaceDetection(webcam, webcamCanvas, [detections]);
+                        const canvas = document.createElement('canvas');
+                        canvas.width = webcam.videoWidth;
+                        canvas.height = webcam.videoHeight;
+                        canvas.getContext('2d').drawImage(webcam, 0, 0, canvas.width, canvas.height);
+                        
+                        capturedImagesDataURLs.push({
+                            dataURL: canvas.toDataURL('image/jpeg', 0.8),
+                            descriptor: Array.from(detections.descriptor)
+                        });
+                        captureCount++;
+                        updateCaptureProgress();
+                        updateImagePreview(canvas.toDataURL('image/jpeg', 0.8));
+                        showMessage(`Face detected. Captured ${captureCount}/${CAPTURE_LIMIT} images.`, 'success');
+                    } else {
+                        drawFaceDetection(webcam, webcamCanvas, null);
+                        showMessage('No clear face detected. Please ensure good lighting, face the camera directly, and remove obstructions.', 'info');
+                    }
+                } else {
+                    stopCapture();
+                    showMessage(`Captured ${capturedImagesDataURLs.length} images. Ready to register.`, 'success');
+                }
+            }, 500);
+        }
+
+        function stopCapture() {
+            isCapturing = false;
+            clearInterval(captureInterval);
+            startCaptureBtn.classList.remove('hidden');
+            stopCaptureBtn.classList.add('hidden');
+            captureProgressText.classList.add('hidden');
+            captureProgressBarContainer.classList.add('hidden');
+            startCaptureBtn.textContent = `Start Capture (${capturedImagesDataURLs.length}/${CAPTURE_LIMIT})`;
+            if (capturedImagesDataURLs.length >= 3) {
+                registerUserBtn.disabled = false;
+            }
+        }
+
+        function updateCaptureProgress() {
+            captureProgressText.textContent = `Capturing images... (${captureCount}/${CAPTURE_LIMIT})`;
+            captureProgressBar.style.width = `${(captureCount / CAPTURE_LIMIT) * 100}%`;
+        }
+
+        function updateImagePreview(imageUrl) {
+            const img = document.createElement('img');
+            img.src = imageUrl;
+            img.className = 'preview-image';
+            imagePreview.appendChild(img);
+            imagePreview.scrollTop = imagePreview.scrollHeight;
+        }
+
+        async function handleFileUpload(e) {
+            const files = e.target.files;
+            if (files.length === 0) return;
+            
+            showMessage('Processing uploaded images...', 'info');
+            capturedImagesDataURLs = []; 
+            imagePreview.innerHTML = '';
+            captureCount = 0;
+
+            const processFile = (file) => new Promise(resolve => {
+                const reader = new FileReader();
+                reader.onload = async (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = async () => {
+                        if (!window.faceapi) {
+                            showMessage('Face-api.js not loaded for image processing.', 'error');
+                            resolve();
+                            return;
+                        }
+                        const detections = await faceapi.detectSingleFace(img, new faceapi.SsdMobilenetv1Options({ minConfidence: FACE_DETECTION_MIN_CONFIDENCE })).withFaceLandmarks().withFaceDescriptor();
+                        if (detections && detections.detection.score >= FACE_DETECTION_MIN_CONFIDENCE) {
+                            capturedImagesDataURLs.push({
+                                dataURL: event.target.result,
+                                descriptor: Array.from(detections.descriptor)
+                            });
+                            updateImagePreview(event.target.result);
+                            captureCount++;
+                            startCaptureBtn.textContent = `Start Capture (${capturedImagesDataURLs.length}/${CAPTURE_LIMIT})`;
+                        } else {
+                            showMessage(`No clear face detected in ${file.name}. Skipping. Please ensure good lighting and face the camera directly.`, 'info');
+                        }
+                        resolve();
+                    };
+                };
+                reader.readAsDataURL(file);
+            });
+
+            for (let i = 0; i < files.length; i++) {
+                await processFile(files[i]);
+            }
+
+            if (capturedImagesDataURLs.length >= 3) {
+                registerUserBtn.disabled = false;
+                showMessage(`Processed ${capturedImagesDataURLs.length} images. Ready to register.`, 'success');
+            } else {
+                showMessage(`Only ${capturedImagesDataURLs.length} images with faces detected. At least 3 are recommended for accurate registration.`, 'error');
+                registerUserBtn.disabled = true;
+            }
+        }
+
+        async function registerUser() {
+            const name = document.getElementById('name').value.trim();
+            const rollNo = document.getElementById('rollNo').value.trim(); 
+            
+            if (!name || !rollNo) { 
+                showMessage('Please enter full name and roll number.', 'error'); 
+                return;
+            }
+            
+            if (capturedImagesDataURLs.length < 3) {
+                showMessage('Please capture or upload at least 3 images with faces.', 'error');
+                return;
+            }
+            
+            try {
+                showMessage('Registering user...', 'info');
+                registerUserBtn.disabled = true;
+
+                const formData = new FormData();
+                formData.append('id', rollNo); 
+                formData.append('name', name);
+                
+                const descriptorsToSend = capturedImagesDataURLs.map(img => img.descriptor);
+                formData.append('descriptors', JSON.stringify(descriptorsToSend));
+
+                const response = await fetch(`${API_BASE_URL}/register_face`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showMessage('User registered successfully!', 'success');
+                    document.getElementById('name').value = '';
+                    document.getElementById('rollNo').value = ''; 
+                    capturedImagesDataURLs = [];
+                    imagePreview.innerHTML = '';
+                    stopCapture();
+                    fetchUsers();
+                } else {
+                    showMessage(data.error || 'Registration failed', 'error');
+                }
+            } catch (err) {
+                showMessage('Error connecting to backend: ' + err.message, 'error');
+            } finally {
+                registerUserBtn.disabled = false;
+            }
+        }
+
+        async function startRecognition() {
+            if (!areModelsLoaded) {
+                showMessage('Face recognition models are not loaded. Please wait.', 'error');
+                return;
+            }
+            const webcamStarted = await startWebcam(recognizeWebcam);
+            if (!webcamStarted) {
+                return;
+            }
+            
+            showMessage('Starting recognition...', 'info');
+            recognizeBtnAction.classList.add('hidden');
+            stopRecognitionBtn.classList.remove('hidden');
+            recognizedUserDiv.classList.add('hidden');
+
+            if (recognitionInterval) clearInterval(recognitionInterval);
+
+            recognitionInterval = setInterval(async () => {
+                if (!recognizeWebcam.srcObject) {
+                    clearInterval(recognitionInterval);
+                    return;
+                }
+                
+                const detections = await faceapi.detectSingleFace(recognizeWebcam, new faceapi.SsdMobilenetv1Options({ minConfidence: FACE_DETECTION_MIN_CONFIDENCE })).withFaceLandmarks().withFaceDescriptor();
+                    
+                if (detections && detections.detection.score >= FACE_DETECTION_MIN_CONFIDENCE) {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = recognizeWebcam.videoWidth;
+                    canvas.height = recognizeWebcam.videoHeight;
+                    canvas.getContext('2d').drawImage(recognizeWebcam, 0, 0, canvas.width, canvas.height);
+                    
+                    const blob = await new Promise(resolve => {
+                        canvas.toBlob(resolve, 'image/jpeg', 0.8);
+                    });
+                    
+                    const formData = new FormData();
+                    formData.append('image', blob, 'capture.jpg');
+                    
+                    try {
+                        const response = await fetch(`${API_BASE_URL}/recognize_face`, {
+                            method: 'POST',
+                            body: formData
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (response.ok && data.recognized) {
+                            const label = `${data.user_name} (${data.user_id})`;
+                            const color = data.message.includes('already') ? 'orange' : 'green';
+                            drawFaceRecognition(recognizeWebcam, recognizeCanvas, detections, label, color);
+                            displayRecognizedUser(data.user_id, data.user_name, data.attendance_dates, data.message);
+                            fetchUsers();
+                        } else {
+                            const label = data.message || 'Unknown User';
+                            drawFaceRecognition(recognizeWebcam, recognizeCanvas, detections, label, 'red');
+                            showMessage(data.message || 'User not recognized.', 'error');
+                            recognizedUserDiv.classList.add('hidden');
+                        }
+                    } catch (err) {
+                        console.error("Error with recognition backend:", err);
+                        drawFaceRecognition(recognizeWebcam, recognizeCanvas, detections, 'Error', 'purple');
+                        showMessage('Recognition failed due to backend error: ' + err.message, 'error');
+                        recognizedUserDiv.classList.add('hidden');
+                    }
+                } else {
+                    drawFaceRecognition(recognizeWebcam, recognizeCanvas, null, 'No Face Detected. Please ensure good lighting and face the camera directly.', 'red');
+                    showMessage('No clear face detected. Please ensure good lighting, face the camera directly, and remove obstructions.', 'info');
+                    recognizedUserDiv.classList.add('hidden');
+                }
+            }, 1000);
+        }
+
+        function stopRecognition() {
+            clearInterval(recognitionInterval);
+            stopAllWebcams();
+            recognizeBtnAction.classList.remove('hidden');
+            stopRecognitionBtn.classList.add('hidden');
+            showMessage('Recognition stopped.', 'info');
+        }
+
+        function displayRecognizedUser(id, name, attendanceDates, message) {
+            document.getElementById('recognizedName').textContent = name;
+            document.getElementById('recognizedRollNo').textContent = id; 
+            document.getElementById('attendanceCount').textContent = attendanceDates ? attendanceDates.length : 0;
+            recognizedUserDiv.classList.remove('hidden');
+            showMessage(message, message.includes('already') ? 'info' : 'success');
+        }
+
+        async function fetchUsers() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/users_data`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    renderUsersList(data.users, data.daily_summary.present_today_ids);
+                    renderDailySummary(data.daily_summary);
+                    renderAttendanceTable(data.users, attendanceDateFilter.value); 
+                } else {
+                    showMessage('Error fetching users data: ' + (data.error || response.statusText), 'error');
+                }
+            } catch (err) {
+                showMessage('Error fetching users data: ' + err.message, 'error');
+            }
+        }
+
+        function renderUsersList(users, presentTodayIds) {
+            usersListDiv.innerHTML = '';
+            
+            if (users.length === 0) {
+                usersListDiv.innerHTML = '<p>No users registered yet.</p>';
+                return;
+            }
+            
+            users.forEach(user => {
+                const isPresentToday = presentTodayIds.includes(user.id);
+                const statusClass = isPresentToday ? 'status-present' : 'status-absent';
+                const statusText = isPresentToday ? 'Present Today' : 'Absent Today';
+                
+                const userCard = document.createElement('div');
+                userCard.className = 'user-card';
+                
+                userCard.innerHTML = `
+                    <div class="user-card-info">
+                        <div class="user-card-name">${user.name}</div>
+                        <div class="user-card-rollno">${user.id}</div> 
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div class="user-card-attendance-summary">
+                            ${user.attendance_count || 0} days
+                        </div>
+                        <div class="today-status ${statusClass}">
+                            ${statusText}
+                        </div>
+                        <button class="view-attendance-btn" data-user-id="${user.id}" data-user-name="${user.name}">View Attendance</button>
+                    </div>
+                `;
+                usersListDiv.appendChild(userCard);
+            });
+
+            document.querySelectorAll('.view-attendance-btn').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const userId = event.target.dataset.userId;
+                    const userName = event.target.dataset.userName;
+                    displayAttendanceModal(userId, userName);
+                });
+            });
+        }
+
+        function renderAttendanceTable(users, filterDate = null) {
+            attendanceTableBody.innerHTML = ''; 
+            let allAttendanceRecords = [];
+
+            users.forEach(user => {
+                user.attendance_dates.forEach(date => {
+                    allAttendanceRecords.push({
+                        date: date,
+                        rollNo: user.id,
+                        name: user.name
+                    });
+                });
+            });
+
+            let filteredRecords = allAttendanceRecords;
+            if (filterDate) {
+                filteredRecords = allAttendanceRecords.filter(record => record.date === filterDate);
+            }
+
+            filteredRecords.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            if (filteredRecords.length === 0) {
+                attendanceTableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; padding: 20px;">No attendance records for ${filterDate || 'selected date'}.</td></tr>`;
+                return;
+            }
+
+            filteredRecords.forEach(record => {
+                const row = attendanceTableBody.insertRow();
+                const dateCell = row.insertCell();
+                const rollNoCell = row.insertCell();
+                const nameCell = row.insertCell();
+
+                dateCell.textContent = record.date;
+                rollNoCell.textContent = record.rollNo;
+                nameCell.textContent = record.name;
+            });
+        }
+
+
+        async function displayAttendanceModal(userId, userName) {
+            modalUserName.textContent = `Attendance for ${userName}`;
+            modalAttendanceList.innerHTML = '<p>Loading attendance...</p>';
+            attendanceModal.classList.remove('hidden'); 
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/users_data`);
+                const data = await response.json();
+                if (response.ok) {
+                    const user = data.users.find(u => u.id === userId);
+                    if (user && user.attendance_dates && user.attendance_dates.length > 0) {
+                        modalAttendanceList.innerHTML = user.attendance_dates
+                            .sort((a, b) => new Date(b) - new Date(a)) 
+                            .map(date => `<p>${date}</p>`)
+                            .join('');
+                    } else {
+                        modalAttendanceList.innerHTML = '<p>No attendance records found for this user.</p>';
+                    }
+                } else {
+                    modalAttendanceList.innerHTML = `<p>Error loading attendance: ${data.error || response.statusText}</p>`;
+                }
+            } catch (error) {
+                modalAttendanceList.innerHTML = `<p>Error fetching attendance data: ${error.message}</p>`;
+                console.error("Error fetching attendance for modal:", error);
+            }
+        }
+
+        closeButton.addEventListener('click', () => {
+            attendanceModal.classList.add('hidden'); 
+        });
+
+        window.addEventListener('click', (event) => {
+            if (event.target === attendanceModal) {
+                attendanceModal.classList.add('hidden'); 
+            }
+        });
+
+
+        function renderDailySummary(summary) {
+            document.getElementById('summaryTotal').textContent = summary.total_registered;
+            document.getElementById('summaryPresent').textContent = summary.present_count;
+            document.getElementById('presentNames').textContent = summary.present_names.join(', ') || 'None';
+            document.getElementById('summaryAbsent').textContent = summary.absent_count;
+            document.getElementById('absentNames').textContent = summary.absent_names.join(', ') || 'None';
+            dailySummaryDiv.classList.remove('hidden');
+        }
+
+        registerBtn.addEventListener('click', async () => {
+            stopAllWebcams();
+            registerBtn.classList.add('active');
+            recognizeBtn.classList.remove('active');
+            attendanceRecordsBtn.classList.remove('active'); 
+            registerPanel.classList.remove('hidden');
+            recognizePanel.classList.add('hidden');
+            attendanceHistoryPanel.classList.add('hidden'); 
+            await startWebcam(webcam);
+            captureProgressText.classList.add('hidden');
+            captureProgressBarContainer.classList.add('hidden');
+            startCaptureBtn.textContent = `Start Capture (0/${CAPTURE_LIMIT})`;
+            registerUserBtn.disabled = true;
+            imagePreview.innerHTML = '';
+            capturedImagesDataURLs = [];
+            captureCount = 0;
+            messageContainer.style.display = 'none';
+        });
+
+        recognizeBtn.addEventListener('click', async () => {
+            stopAllWebcams();
+            recognizeBtn.classList.add('active');
+            registerBtn.classList.remove('active');
+            attendanceRecordsBtn.classList.remove('active'); 
+            recognizePanel.classList.remove('hidden');
+            registerPanel.classList.add('hidden');
+            attendanceHistoryPanel.classList.add('hidden'); 
+            recognizeBtnAction.classList.remove('hidden');
+            stopRecognitionBtn.classList.add('hidden');
+            recognizedUserDiv.classList.add('hidden');
+            messageContainer.style.display = 'none';
+            await startWebcam(recognizeWebcam);
+        });
+
+        attendanceRecordsBtn.addEventListener('click', async () => {
+            stopAllWebcams();
+            attendanceRecordsBtn.classList.add('active');
+            registerBtn.classList.remove('active');
+            recognizeBtn.classList.remove('active');
+            attendanceHistoryPanel.classList.remove('hidden'); 
+            registerPanel.classList.add('hidden');
+            recognizePanel.classList.add('hidden');
+            messageContainer.style.display = 'none';
+            
+            const today = new Date().toISOString().split('T')[0];
+            attendanceDateFilter.value = today; 
+            fetchUsers(); 
+        });
+
+        attendanceDateFilter.addEventListener('change', async () => {
+            const selectedDate = attendanceDateFilter.value;
+            try {
+                const response = await fetch(`${API_BASE_URL}/users_data`);
+                const data = await response.json();
+                if (response.ok) {
+                    renderAttendanceTable(data.users, selectedDate);
+                } else {
+                    showMessage('Error fetching users data for date filter: ' + (data.error || response.statusText), 'error');
+                }
+            } catch (err) {
+                showMessage('Error fetching users data for date filter: ' + err.message, 'error');
+            }
+        });
+
+        startCaptureBtn.addEventListener('click', startCapture);
+        stopCaptureBtn.addEventListener('click', stopCapture);
+        uploadImagesBtn.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', handleFileUpload);
+        registerUserBtn.addEventListener('click', registerUser);
+        recognizeBtnAction.addEventListener('click', startRecognition);
+        stopRecognitionBtn.addEventListener('click', stopRecognition);
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadFaceApiModels();
+            await startWebcam(webcam); 
+            fetchUsers();
+        });
+
+        window.addEventListener('beforeunload', () => {
+            stopAllWebcams();
+        });
+    </script>
+</body>
+</html>
